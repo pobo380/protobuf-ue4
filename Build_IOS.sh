@@ -45,10 +45,21 @@ pushd ${PROTOBUF_DIR}/cmake
     GCC_SYMBOLS_PRIVATE_EXTERN=YES                                     \
     -jobs ${CORE_COUNT}                                                \
     build
+  xcodebuild -project protobuf.xcodeproj                               \
+    -target libprotobuf-lite                                           \
+    -configuration Release                                             \
+    -sdk iphoneos                                                      \
+    -arch arm64                                                        \
+    IPHONEOS_DEPLOYMENT_TARGET=${PROTOBUF_UE4_IOS_DEPLOYMENT_TARGET}   \
+    GCC_SYMBOLS_PRIVATE_EXTERN=YES                                     \
+    -jobs ${CORE_COUNT}                                                \
+    build
   xcodebuild -target install build
 
   # TODO: delete the code below, shoud use xcodebuild config.
   mv Release-iphoneos/libprotobuf.a "${PROTOBUF_UE4_PREFIX}/lib/libprotobuf.a"
+  mv Release-iphoneos/libprotobuf-lite.a "${PROTOBUF_UE4_PREFIX}/lib/libprotobuf-lite.a"
 
   lipo -info "${PROTOBUF_UE4_PREFIX}/lib/libprotobuf.a"
+  lipo -info "${PROTOBUF_UE4_PREFIX}/lib/libprotobuf-lite.a"
 popd
