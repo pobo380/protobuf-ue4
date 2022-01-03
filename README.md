@@ -1,12 +1,23 @@
 # protobuf-ue4
-Build Protobuf for Unreal Engine 4 with Jenkins Pipeline.
 
+Build Protobuf for Unreal Engine 4
 
-备注：
+## Supported Platforms
 
-（1）在windows、linux、mac、ios、android平台下都生成静态库。
+- Mac
+- iOS
+- Windows(x64)
 
-（2）在windows平台下生成protoc.exe、include文件夹，所有平台共用windows平台生成的include文件夹。
+### Currently unsupported
 
-（3）如果特定版本的include文件夹中有源码修改，则添加对应版本的Fix-VERSION.bat文件，参看Fix-3.6.1.bat。
+- Linux
+- Android
+
+## Patches
+
+### v3.19.1
+
+- `fix: Respect protobuf_MSVC_STATIC_RUNTIME option when using (CMake 3.15+)` (original: [https://github.com/protocolbuffers/protobuf/pull/9153](https://github.com/protocolbuffers/protobuf/pull/9153))
+- `fix: Use #ifdef for undefined identifiers` (original: [https://github.com/protocolbuffers/protobuf/pull/9201](https://github.com/protocolbuffers/protobuf/pull/9201))
+- `fix: disable warning C4946 (Windows)`
 
