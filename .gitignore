@@ -1,0 +1,4 @@
+# cloned repository 
+/protobuf-*/
+# preferred install dest path
+/build/
