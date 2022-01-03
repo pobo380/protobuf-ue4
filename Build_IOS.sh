@@ -36,7 +36,7 @@ git clone  --depth=1 --single-branch ${PROTOBUF_URL} ${PROTOBUF_DIR} -b v${PROTO
 git -C ${PROTOBUF_DIR} submodule update --init --recursive --recommend-shallow --depth=1 
 
 # Apply patch if the patch file exists
-readonly PATCH_FILE=v${PROTOBUF_UE4_VERSION}.patch
+readonly PATCH_FILE=patch/v${PROTOBUF_UE4_VERSION}.patch
 
 if [ -f "$PATCH_FILE" ]; then
   pushd ${PROTOBUF_DIR}
