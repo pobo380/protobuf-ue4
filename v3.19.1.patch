@@ -1,0 +1,116 @@
+From 21e3bbe145e8e8290d3f211e4793406a4abbebe2 Mon Sep 17 00:00:00 2001
+From: "kohei.noda" <kohei.noda@mixi.co.jp>
+Date: Mon, 3 Jan 2022 23:24:58 +0900
+Subject: [PATCH 1/3] fix: use #ifdef for undefined identifiers
+
+---
+ src/google/protobuf/inlined_string_field.h | 2 +-
+ src/google/protobuf/port_def.inc           | 4 ++--
+ src/google/protobuf/port_undef.inc         | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/google/protobuf/inlined_string_field.h b/src/google/protobuf/inlined_string_field.h
+index 1fe639f06..e4ab35972 100644
+--- a/src/google/protobuf/inlined_string_field.h
++++ b/src/google/protobuf/inlined_string_field.h
+@@ -347,7 +347,7 @@ inline void InlinedStringField::Swap(
+     InlinedStringField* from, const std::string* /*default_value*/,
+     Arena* arena, bool donated, bool from_donated, uint32_t* donating_states,
+     uint32_t* from_donating_states, uint32_t mask) {
+-#if GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
++#ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+   // If one is donated and the other is not, undonate the donated one.
+   if (donated && !from_donated) {
+     MutableSlow(arena, donated, donating_states, mask);
+diff --git a/src/google/protobuf/port_def.inc b/src/google/protobuf/port_def.inc
+index 71325c387..67b67e949 100644
+--- a/src/google/protobuf/port_def.inc
++++ b/src/google/protobuf/port_def.inc
+@@ -617,7 +617,7 @@
+ #ifdef PROTOBUF_PRAGMA_INIT_SEG
+ #error PROTOBUF_PRAGMA_INIT_SEG was previously defined
+ #endif
+-#if _MSC_VER
++#ifdef _MSC_VER
+ #define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
+ #else
+ #define PROTOBUF_PRAGMA_INIT_SEG
+@@ -784,7 +784,7 @@
+ #endif
+ 
+ // Silence some MSVC warnings in all our code.
+-#if _MSC_VER
++#ifdef _MSC_VER
+ #pragma warning(push)
+ // For non-trivial unions
+ #pragma warning(disable : 4582)
+diff --git a/src/google/protobuf/port_undef.inc b/src/google/protobuf/port_undef.inc
+index 579eb419d..ccc5daf56 100644
+--- a/src/google/protobuf/port_undef.inc
++++ b/src/google/protobuf/port_undef.inc
+@@ -140,6 +140,6 @@
+ #endif
+ 
+ // Pop the warning(push) from port_def.inc
+-#if _MSC_VER
++#ifdef _MSC_VER
+ #pragma warning(pop)
+ #endif
+-- 
+2.30.1
+
+
+From 778857dfa6b787b3e0af0c4a9c8b1ea001154cfd Mon Sep 17 00:00:00 2001
+From: "kohei.noda" <kohei.noda@mixi.co.jp>
+Date: Mon, 3 Jan 2022 23:46:32 +0900
+Subject: [PATCH 2/3] fix: disable warning C4946
+
+---
+ src/google/protobuf/port_def.inc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/google/protobuf/port_def.inc b/src/google/protobuf/port_def.inc
+index 67b67e949..82121c969 100644
+--- a/src/google/protobuf/port_def.inc
++++ b/src/google/protobuf/port_def.inc
+@@ -797,6 +797,8 @@
+ #pragma warning(disable: 4127)
+ // decimal digit terminates octal escape sequence
+ #pragma warning(disable: 4125)
++// For reinterpret_cast used between related classes
++#pragma warning(disable: 4946)
+ #endif
+ 
+ // We don't want code outside port_def doing complex testing, so
+-- 
+2.30.1
+
+
+From 20ab3b685aea48496406ade667f5a8bd89f69fec Mon Sep 17 00:00:00 2001
+From: "kohei.noda" <kohei.noda@mixi.co.jp>
+Date: Tue, 4 Jan 2022 02:23:58 +0900
+Subject: [PATCH 3/3] fix: Respect protobuf_MSVC_STATIC_RUNTIME option when
+ using (CMake 3.15+)
+
+---
+ cmake/CMakeLists.txt | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 51e8478f6..113557a69 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -182,7 +182,9 @@ else (protobuf_BUILD_SHARED_LIBS)
+   # making programmatic control difficult.  Prefer the functionality in newer
+   # CMake versions when available.
+   if(CMAKE_VERSION VERSION_GREATER 3.15 OR CMAKE_VERSION VERSION_EQUAL 3.15)
+-    set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
++    if (protobuf_MSVC_STATIC_RUNTIME)
++      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
++    endif (protobuf_MSVC_STATIC_RUNTIME)
+   else()
+     # In case we are building static libraries, link also the runtime library statically
+     # so that MSVCR*.DLL is not required at runtime.
+-- 
+2.30.1
+
