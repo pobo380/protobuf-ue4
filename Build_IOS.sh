@@ -35,7 +35,7 @@ wget -q -O ${PROTOBUF_TAR} ${PROTOBUF_URL}
 tar zxf ${PROTOBUF_TAR}
 
 pushd ${PROTOBUF_DIR}/cmake
-  cmake -DCMAKE_INSTALL_PREFIX="${PROTOBUF_UE4_PREFIX}" . -G "Xcode"
+  cmake -DCMAKE_INSTALL_PREFIX="${PROTOBUF_UE4_PREFIX}" . -G "Xcode" -T buildsystem=1
   xcodebuild -project protobuf.xcodeproj                               \
     -target libprotobuf                                                \
     -configuration Release                                             \
