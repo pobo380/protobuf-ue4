@@ -23,16 +23,32 @@ else
   echo "PROTOBUF_UE4_IOS_DEPLOYMENT_TARGET: ${PROTOBUF_UE4_IOS_DEPLOYMENT_TARGET}"
 fi
 
-readonly CORE_COUNT=$(sysctl -n machdep.cpu.core_count)
-readonly PROTOBUF_URL=https://github.com/google/protobuf/releases/download/v${PROTOBUF_UE4_VERSION}/protobuf-cpp-${PROTOBUF_UE4_VERSION}.tar.gz
-readonly PROTOBUF_DIR=protobuf-${PROTOBUF_UE4_VERSION}
-readonly PROTOBUF_TAR=${PROTOBUF_DIR}.tar.gz
+if ! command -v git &> /dev/null; then
+    echo "git could not be found"
+    exit 1
+fi
 
+# clone repository
+readonly PROTOBUF_URL=git@github.com:protocolbuffers/protobuf.git
+readonly PROTOBUF_DIR=protobuf-${PROTOBUF_UE4_VERSION}
+
+git clone  --depth=1 --single-branch ${PROTOBUF_URL} ${PROTOBUF_DIR} -b v${PROTOBUF_UE4_VERSION}
+git -C ${PROTOBUF_DIR} submodule update --init --recursive --recommend-shallow --depth=1 
+
+# Apply patch if the patch file exists
+readonly PATCH_FILE=v${PROTOBUF_UE4_VERSION}.patch
+
+if [ -f "$PATCH_FILE" ]; then
+  pushd ${PROTOBUF_DIR}
+    git apply < ../${PATCH_FILE}
+  popd
+fi
+
+# Make install dest path
 mkdir -p "${PROTOBUF_UE4_PREFIX}"
 
-echo "Downloading: ${PROTOBUF_URL}"
-wget -q -O ${PROTOBUF_TAR} ${PROTOBUF_URL}
-tar zxf ${PROTOBUF_TAR}
+# Build library
+readonly CORE_COUNT=$(sysctl -n machdep.cpu.core_count)
 
 pushd ${PROTOBUF_DIR}/cmake
   cmake -DCMAKE_INSTALL_PREFIX="${PROTOBUF_UE4_PREFIX}" . -G "Xcode" -T buildsystem=1
