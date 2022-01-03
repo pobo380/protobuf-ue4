@@ -21,6 +21,12 @@
     exit /b 1
 )
 
+where git.exe >nul 2>nul
+@if not ERRORLEVEL 0 (
+    echo git could not be found, exit.
+    exit /b 1
+)
+
 set CURRENT_DIR=%cd%
 @REM We only need x64 (VsDevCmd.bat defaults arch to x86, pass -help to see all available options)
 set PROTOBUF_ARCH=x64
