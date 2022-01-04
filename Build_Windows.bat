@@ -35,10 +35,10 @@ set PROTOBUF_CMAKE_OPTIONS=-Dprotobuf_MSVC_STATIC_RUNTIME=OFF
 
 @REM -----------------------------------------------------------------------
 @REM Set Environment Variables for the Visual Studio %COMPILER% Command Line
-set VSDEVCMD=C:\Program Files (x86)\Microsoft Visual Studio\%COMPILER%\Community\Common7\Tools\VsDevCmd.bat
+set VSDEVCMD=C:\Program Files (x86)\Microsoft Visual Studio\%COMPILER%\Professional\Common7\Tools\VsDevCmd.bat
 if exist "%VSDEVCMD%" (
     @REM Tell VsDevCmd.bat to set the current directory, in case [USERPROFILE]\source exists. See:
-    @REM C:\Program Files (x86)\Microsoft Visual Studio\%COMPILER%\Community\Common7\Tools\vsdevcmd\core\vsdevcmd_end.bat
+    @REM C:\Program Files (x86)\Microsoft Visual Studio\%COMPILER%\Professional\Common7\Tools\vsdevcmd\core\vsdevcmd_end.bat
      set VSCMD_START_DIR=%CD%
      call "%VSDEVCMD%" -arch=%PROTOBUF_ARCH%
       ) else (
@@ -46,27 +46,29 @@ if exist "%VSDEVCMD%" (
      exit /b 2
 )
 
-set PROTOBUF_URL=https://github.com/google/protobuf/releases/download/v%PROTOBUF_UE4_VERSION%/protobuf-cpp-%PROTOBUF_UE4_VERSION%.zip
+@REM Clone Repository
+set PROTOBUF_URL=git@github.com:protocolbuffers/protobuf.git
 set PROTOBUF_DIR=protobuf-%PROTOBUF_UE4_VERSION%
-set PROTOBUF_ZIP=protobuf-%PROTOBUF_UE4_VERSION%.zip
 
-echo "Downloading: %PROTOBUF_URL%"
-REM Force Invoke-WebRequest to use TLS 1.2
-powershell -Command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
-    Invoke-WebRequest -Uri %PROTOBUF_URL% -OutFile %PROTOBUF_ZIP%
+git clone --depth=1 --single-branch %PROTOBUF_URL% %PROTOBUF_DIR% -b v%PROTOBUF_UE4_VERSION%
+git -C %PROTOBUF_DIR% submodule update --init --recursive --recommend-shallow --depth=1
 
-powershell -Command Expand-Archive -Path %PROTOBUF_ZIP% -DestinationPath .
+@REM Apply patch if the patch file exists
+set PATCH_FILE=%cd%\patch\v%PROTOBUF_UE4_VERSION%.patch
 
-set FIX_FILE=%cd%\Fix-%PROTOBUF_UE4_VERSION%.bat
-if exist "%FIX_FILE%" (
-    call %FIX_FILE%
+if exist "%PATCH_FILE%" (
+    pushd %PROTOBUF_DIR%
+        git apply < %PATCH_FILE%
+    popd
 ) else (
     echo protobuf-%PROTOBUF_UE4_VERSION% has not been modified
 )
 
+@REM Make install dest path
 mkdir "%PROTOBUF_UE4_PREFIX%"
-
 cd "%CURRENT_DIR%"
+
+@REM Build library
 
 pushd %PROTOBUF_DIR%\cmake
     cmake -G "NMake Makefiles" ^
