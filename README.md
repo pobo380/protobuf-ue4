@@ -13,6 +13,18 @@ Build Protobuf for Unreal Engine 4
 - Linux
 - Android
 
+## Prerequesties
+
+- Mac/iOS
+  - Xcode
+  - Git
+  - CMake
+- Windows
+  - Visual Studio Professional (If you wanna use Community Edition, you have to modify the path string to Visual Studio in the batch file.)
+  - Git
+  - CMake
+
+
 ## Patches
 
 ### v3.19.1
