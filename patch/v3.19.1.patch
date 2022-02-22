@@ -86,28 +86,30 @@ index 67b67e949..82121c969 100644
 2.30.1
 
 
-From 20ab3b685aea48496406ade667f5a8bd89f69fec Mon Sep 17 00:00:00 2001
+From 5e769ef65359426ad35dcc2b33ca7aaa8a6a49be Mon Sep 17 00:00:00 2001
 From: "kohei.noda" <kohei.noda@mixi.co.jp>
 Date: Tue, 4 Jan 2022 02:23:58 +0900
 Subject: [PATCH 3/4] fix: Respect protobuf_MSVC_STATIC_RUNTIME option when
  using (CMake 3.15+)
 
 ---
- cmake/CMakeLists.txt | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ cmake/CMakeLists.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index 51e8478f6..113557a69 100644
+index 51e8478f6..88bc6a244 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
-@@ -182,7 +182,9 @@ else (protobuf_BUILD_SHARED_LIBS)
+@@ -182,7 +182,11 @@ else (protobuf_BUILD_SHARED_LIBS)
    # making programmatic control difficult.  Prefer the functionality in newer
    # CMake versions when available.
    if(CMAKE_VERSION VERSION_GREATER 3.15 OR CMAKE_VERSION VERSION_EQUAL 3.15)
 -    set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
 +    if (protobuf_MSVC_STATIC_RUNTIME)
 +      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
-+    endif (protobuf_MSVC_STATIC_RUNTIME)
++    else()
++      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
++    endif()
    else()
      # In case we are building static libraries, link also the runtime library statically
      # so that MSVCR*.DLL is not required at runtime.
@@ -115,7 +117,7 @@ index 51e8478f6..113557a69 100644
 2.30.1
 
 
-From c63291af978e374617abf666dc5b09e8d2758d5f Mon Sep 17 00:00:00 2001
+From 3512bc8612b2018bf9e44f7f6f5fe8342fccab08 Mon Sep 17 00:00:00 2001
 From: "kohei.noda" <kohei.noda@mixi.co.jp>
 Date: Mon, 17 Jan 2022 23:31:30 +0900
 Subject: [PATCH 4/4] fix: disable warning C4800
