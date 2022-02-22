@@ -58,7 +58,7 @@ set PATCH_FILE=%cd%\patch\v%PROTOBUF_UE4_VERSION%.patch
 
 if exist "%PATCH_FILE%" (
     pushd %PROTOBUF_DIR%
-        git apply < %PATCH_FILE%
+        git apply --ignore-whitespace < %PATCH_FILE%
     popd
 ) else (
     echo protobuf-%PROTOBUF_UE4_VERSION% has not been modified
