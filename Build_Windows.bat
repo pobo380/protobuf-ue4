@@ -31,7 +31,7 @@ set CURRENT_DIR=%cd%
 @REM We only need x64 (VsDevCmd.bat defaults arch to x86, pass -help to see all available options)
 set PROTOBUF_ARCH=x64
 @REM Tell CMake to use dynamic CRT (/MD) instead of static CRT (/MT)
-set PROTOBUF_CMAKE_OPTIONS=-Dprotobuf_MSVC_STATIC_RUNTIME=OFF
+set PROTOBUF_CMAKE_OPTIONS=-Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF
 
 @REM -----------------------------------------------------------------------
 @REM Set Environment Variables for the Visual Studio %COMPILER% Command Line
